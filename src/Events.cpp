@@ -12,6 +12,36 @@ sf::RectangleShape selectionBox;
 
 void handleEvent(sf::Event &event, sf::RenderWindow &window) {
 
+	static bool ctrlHeld  = false;
+	static bool shiftHeld = false;
+	static bool altHeld   = false;
+	static bool spaceHeld   = false;
+	static bool leftHeld   = false;
+
+
+	if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
+	{
+		if (keyPressed->scancode == sf::Keyboard::Scancode::LControl) ctrlHeld = true;
+		if (keyPressed->scancode == sf::Keyboard::Scancode::LShift)   shiftHeld = true;
+		if (keyPressed->scancode == sf::Keyboard::Scancode::LAlt)     altHeld = true;
+		if (keyPressed->scancode == sf::Keyboard::Scancode::Space)     spaceHeld = true;
+	}
+	else if (const auto* keyPressed = event.getIf<sf::Event::KeyReleased>())
+	{
+		if (keyPressed->scancode == sf::Keyboard::Scancode::LControl) ctrlHeld = false;
+		if (keyPressed->scancode == sf::Keyboard::Scancode::LShift)   shiftHeld = false;
+		if (keyPressed->scancode == sf::Keyboard::Scancode::LAlt)     altHeld = false;
+		if (keyPressed->scancode == sf::Keyboard::Scancode::Space)     spaceHeld = false;
+	}
+
+
+	if (const auto* mousePressed = event.getIf<sf::Event::MouseButtonPressed>()) {
+		if (mousePressed->button == sf::Mouse::Button::Left) leftHeld = true;
+	}
+	else if (const auto* mousePressed = event.getIf<sf::Event::MouseButtonReleased>()) {
+		if (mousePressed->button == sf::Mouse::Button::Left) leftHeld = false;
+	}
+
 	
 
 	if (event.is<sf::Event::Closed>()) {
@@ -57,7 +87,11 @@ void handleEvent(sf::Event &event, sf::RenderWindow &window) {
 
 
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl) && event.is<sf::Event::MouseWheelScrolled>()) {
+	if (event.is<sf::Event::MouseWheelScrolled>() && ctrlHeld) {
+
+
+
+
 
 		float mDelta = event.getIf<sf::Event::MouseWheelScrolled>()->delta;
 		currentState.view = window.getView();
@@ -93,8 +127,9 @@ void handleEvent(sf::Event &event, sf::RenderWindow &window) {
 	static bool dragging = false;
 	static sf::Vector2f grabOffset;
 	
-	if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) &&
-		sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+	// if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) &&
+		// sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+	if (leftHeld && spaceHeld)
 	{
 		sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 		sf::Vector2f worldPos = window.mapPixelToCoords(mousePos);
