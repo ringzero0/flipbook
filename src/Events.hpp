@@ -13,6 +13,8 @@ void handleErase(sf::Event& event, sf::RenderWindow& window);
 void handleUndo(sf::Event& event, sf::RenderWindow& window);
 void resize(sf::RenderWindow& window);
 
+sf::Vector2f getMousePosOnCanvas(sf::RenderWindow& window);
+
 void fill(sf::Image& img, unsigned int x, unsigned int y, sf::Color targetColor, sf::Color replacementColor);
 
 void drawSelection(sf::RenderWindow& window);

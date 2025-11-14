@@ -99,6 +99,9 @@ sf::Vector2f Canvas::getCanvasPosition()
 
 
 
+
+
+
 void Canvas::move(sf::Vector2f offset) {
 	canvasImageSprite.move(offset);
 }
@@ -106,6 +109,10 @@ void Canvas::move(sf::Vector2f offset) {
 
 void Canvas::setPixel(sf::Vector2u coords, sf::Color color) {
 	canvasImage.setPixel(coords, color);
+}
+
+sf::Color Canvas::getPixel(sf::Vector2u coords) {
+	return canvasImage.getPixel(coords);
 }
 
 

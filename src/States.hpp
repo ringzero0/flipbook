@@ -29,7 +29,8 @@ typedef struct States {
 	bool					grid;
 	bool					codeEditor;
 	std::filesystem::path	savedPath;
-	bool editorFocused;
+	bool					editorFocused;
+	sf::Vector2f			mousePosOnCanvas;
 
 };
 

@@ -758,6 +758,11 @@ void Gui::drawAnimationPanel() {
     if (ImGui::Button(currentState.grid ? "Grid ON" : "Grid OFF", ImVec2(130, 30)))
         currentState.grid = !currentState.grid;
 
+    ImGui::SameLine();
+
+    ImGui::Text("X: %d, Y: %d", static_cast<int>(currentState.mousePosOnCanvas.x), static_cast<int>(currentState.mousePosOnCanvas.y));
+
+
     ImGui::Spacing();
 
     // --- Frame Duration ---

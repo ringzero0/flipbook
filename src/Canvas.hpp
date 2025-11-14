@@ -68,6 +68,7 @@ public:
 	sf::Vector2u		getCanvasSize();
 	sf::Vector2f		getCanvasOrigin();
 	void				setPixel(sf::Vector2u coords, sf::Color color);
+	sf::Color			getPixel(sf::Vector2u coords);
 	void				move(sf::Vector2f offset);
 	void				exportCanvasImage(const std::filesystem::path& filename);
 	void				setCanvasFrameTime(float frameTime);
@@ -81,6 +82,7 @@ public:
 	void				grid();
 
 	const std::uint8_t* getCanvasPixelPtr();
+
 
 
 

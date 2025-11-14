@@ -18,6 +18,17 @@ void handleEvent(sf::Event &event, sf::RenderWindow &window) {
 	static bool spaceHeld   = false;
 	static bool leftHeld   = false;
 
+	// update mouse position on canvas
+	currentState.mousePosOnCanvas = getMousePosOnCanvas(window);
+
+
+
+
+
+
+
+
+
 
 	if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
 	{
@@ -176,6 +187,19 @@ void handleEvent(sf::Event &event, sf::RenderWindow &window) {
 
 void handleMove(sf::Event& event, sf::RenderWindow& window) {
 
+}
+
+sf::Vector2f getMousePosOnCanvas(sf::RenderWindow& window) {
+	sf::Vector2i mousePixel = sf::Mouse::getPosition(window);
+	sf::Vector2f mouseWorld = window.mapPixelToCoords(mousePixel);
+
+	sf::Vector2f canvasPos = currentState.canvas->getCanvasPosition();
+	sf::Vector2f canvasOrigin = currentState.canvas->getCanvasOrigin();
+
+	sf::Vector2f mouseLocal = mouseWorld - canvasPos + canvasOrigin;
+
+
+	return mouseLocal;
 }
 
 

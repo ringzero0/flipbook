@@ -17,6 +17,7 @@ States currentState = {
     false,
     "",
     false,
+    {0,0}
 };
 //sf::Clock clock;
 animationStates animationState = {

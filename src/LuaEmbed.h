@@ -21,9 +21,13 @@ public:
     void luaPopStack(int n);
     lua_State* getLuaState();
     const char* luaToString(signed int n);
+    void moveRegion(const sf::IntRect& region, int dx, int dy);
     static int canvas_setPixel(lua_State* L);
+    static int canvas_getPixel(lua_State* L);
     static int canvas_getWidth(lua_State* L);
     static int canvas_getHeight(lua_State* L);
+
+
 };
 
 
