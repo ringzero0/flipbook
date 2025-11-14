@@ -1,19 +1,18 @@
 #include "Gui.hpp"
 
 
-Gui::Gui(sf::RenderWindow& window) : window(window)
-{
-	ImGui::SFML::Init(window);
-	ImGuiIO& io = ImGui::GetIO();
+Gui::Gui(sf::RenderWindow& window) : window(window) {
+    ImGui::SFML::Init(window);
+    ImGuiIO& io = ImGui::GetIO();
 
 
-	// ImFont* font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/arial.ttf", 22.0f);
-	//
-	//
-	// io.FontDefault = font;
-	//
-	//
-	// ImGui::SFML::UpdateFontTexture();
+    // ImFont* font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/arial.ttf", 22.0f);
+    //
+    //
+    // io.FontDefault = font;
+    //
+    //
+    // ImGui::SFML::UpdateFontTexture();
 
     ImFont* font = io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/arial.ttf", 22.0f);
     if (font) {
@@ -29,8 +28,22 @@ Gui::Gui(sf::RenderWindow& window) : window(window)
     editor.SetShowWhitespaces(false);
     editor.SetTabSize(4);
     editor.SetReadOnly(false);
-    editor.SetText("--Hello world!\n--This is a test.");
-
+    editor.SetText("-- code starts here");
+    // setPixel(x,y,{r,g,b})
+    // setPixel(0,0,{r=255,g=0,b=0}) << red at 0,0 place
+    // getPixel(x,y) returns a color table/dictionary
+    // color = getPixel(0,0) << color.r would be red if set
+    // print(color.r,color.g,color.b)
+    // width = getWidth()
+    //  returns canvas width pixels
+    // print(width)
+    // height = getHeight() returns a height pixels
+    // print(height)
+    // copyRegion(x,y,x1,y1,dx2,dy2)  x and y are coordinates of top left of the rectangle,
+    //  x1,y1 bottom, dx2,dy2 coords to be copied to
+    // draw pixels at 0,0 1,1, 0,1, 1,0 then try
+    //     copy(0,0,1,1,3,3)
+    //     moveRegion(x,y,x1,y1,dx2,dy2) same as copy instead of copy it moves
     lua = new LuaEmbed();
 
 
@@ -215,8 +228,11 @@ void Gui::init() {
 
 
 void Gui::codeWindow() {
-    if (!currentState.codeEditor)
+    if (!currentState.codeEditor) {
+        // currentState.editorFocused = false;
         return;
+    }
+
 
     if (ImGui::Begin("Lua Code Editor", &currentState.codeEditor))
     {

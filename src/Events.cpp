@@ -210,7 +210,7 @@ void handleUndo(sf::Event& event, sf::RenderWindow& window) {
 
 			if (keyPressed->control && keyPressed->scancode == sf::Keyboard::Scan::Z) {
 
-				if (!currentState.editorFocused) {
+				if (!currentState.editorFocused ) {
 					currentState.canvas->popFromUndoStack();
 				}
 
