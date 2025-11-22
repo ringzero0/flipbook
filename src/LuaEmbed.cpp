@@ -4,7 +4,12 @@
 
 #include "LuaEmbed.h"
 
-LuaEmbed::LuaEmbed(){
+#include "Events.hpp"
+
+sf::Image LuaEmbed::temp;
+
+LuaEmbed::LuaEmbed(sf::RenderWindow& window) : window(window){
+
     L = luaL_newstate();
     luaL_openlibs(L);
 
@@ -14,9 +19,89 @@ LuaEmbed::LuaEmbed(){
     lua_register(L, "getHeight", canvas_getHeight);
     lua_register(L, "moveRegion", canvas_moveRegion);
     lua_register(L, "copyRegion", canvas_copyRegion);
+    lua_register(L, "pasteRegion", canvas_pasteRegion);
+    lua_register(L, "setCurrentFrame", canvas_setCurrentFrame);
+    lua_register(L, "setFrameDelay", canvas_setFrameDelay);
+    lua_pushlightuserdata(L, this);
+    lua_pushcclosure(L, LuaEmbed::canvas_setFrames, 1);
+    lua_setglobal(L, "defineFrames");
+
+}
+
+int LuaEmbed::canvas_setFrameDelay(lua_State *L) {
+    int delay = luaL_checkinteger(L, 1);
+    if (delay < 0) return luaL_error(L, "cannot be negative");
+
+    currentState.canvas->frameTime = delay;
+
+    return 0;
+}
+
+
+
+int LuaEmbed::canvas_setCurrentFrame(lua_State *L) {
+
+    int currentFrame = luaL_checkinteger(L, 1);
+
+    if (currentFrame <= 0) {
+        return luaL_error(L, "invalid frame number");
+    }else if (currentFrame > currentState.nCanvas->size()) {
+        return luaL_error(L, "frames out of bound");
+    }
+    currentFrame = currentFrame - 1;
+
+    currentState.currentFrame = currentFrame;
+    std::list<Canvas>::iterator currentCanvasIt = currentState.nCanvas->begin();
+    std::advance(currentCanvasIt, currentFrame);
+    currentState.canvas = &(*currentCanvasIt);
+
+    return 0;
+
+}
+
+
+
+int LuaEmbed::canvas_setFrames(lua_State* L) {
+    LuaEmbed* self = (LuaEmbed*)lua_touserdata(L, lua_upvalueindex(1));
+    return self->emplaceBack(L);
+}
+
+
+
+int LuaEmbed::emplaceBack(lua_State *L) {
+
+
+
+    int frameCount = luaL_checkinteger(L, 1);
+
+    if (frameCount <= 0) {
+        return luaL_error(L, "frame count cannot be zero or negative");
+    }else if (frameCount > 100) {
+        return luaL_error(L, "frame count cannot be greater than 100");
+    }
+
+    currentState.nCanvas->clear();
+
+    for (int i = 0; i < frameCount; i++) {
+
+        if (currentState.canvasPosition != sf::Vector2f{3,3}) {
+            currentState.nCanvas->emplace_back(&window, currentState.width, currentState.height, currentState.canvasPosition);
+        } else {
+            currentState.nCanvas->emplace_back(&window, currentState.width, currentState.height);
+        }
+    }
+    currentState.currentFrame = 0;
+    currentState.canvas = &(*currentState.nCanvas).front();
+    resize(window);
+
+    return 0;
 
 
 }
+
+
+
+
 
 int LuaEmbed::canvas_getWidth(lua_State* L) {
 
@@ -80,9 +165,9 @@ int LuaEmbed::canvas_setPixel(lua_State* L) {
     }
 
     currentState.canvas->setPixel({x,y}, color);
-
-    std::cout << "Set pixel at (" << x << "," << y << ") color("
-              << (int)color.r << "," << (int)color.g << "," << (int)color.b << ")\n";
+    //
+    // std::cout << "Set pixel at (" << x << "," << y << ") color("
+    //           << (int)color.r << "," << (int)color.g << "," << (int)color.b << ")\n";
 
     return 0;
 }
@@ -134,21 +219,21 @@ int LuaEmbed::canvas_moveRegion(lua_State* L) {
     int y = luaL_checkinteger(L, 2);
     int w = luaL_checkinteger(L, 3);
     int h = luaL_checkinteger(L, 4);
-    int dx = luaL_checkinteger(L, 5);
-    int dy = luaL_checkinteger(L, 6);
+    int x1 = luaL_checkinteger(L, 5);
+    int y1 = luaL_checkinteger(L, 6);
 
     auto canvasSize = currentState.canvas->getCanvasSize();
 
-    if (x < 0 || y < 0 || w <= 0 || h <= 0 || dx < 0 || dy < 0)
+    if (x < 0 || y < 0 || w <= 0 || h <= 0 || x1 < 0 || y1 < 0)
         return luaL_error(L, "Coordinates and sizes must be non-negative and non-zero");
-    if (dx < 0 || dy < 0 || dx + w > static_cast<int>(canvasSize.x) || dy + h > static_cast<int>(canvasSize.y))
+    if (x1 < 0 || y1 < 0 || x1 + w > static_cast<int>(canvasSize.x) || y1 + h > static_cast<int>(canvasSize.y))
         return luaL_error(L, "Destination rectangle exceeds canvas size");
 
-    if (dx < 0 || dy < 0 || dx + w > static_cast<int>(canvasSize.x) || dy + h > static_cast<int>(canvasSize.y))
+    if (x1 < 0 || y1 < 0 || x1 + w > static_cast<int>(canvasSize.x) || y1 + h > static_cast<int>(canvasSize.y))
         return luaL_error(L, "Destination rectangle exceeds canvas size");
 
 
-    moveRegion(x, y, w, h, dx, dy);
+    moveRegion(x, y, w, h, x1, y1);
     return 0;
 }
 
@@ -162,28 +247,60 @@ int LuaEmbed::canvas_copyRegion(lua_State* L) {
     int y = luaL_checkinteger(L, 2);
     int w = luaL_checkinteger(L, 3);
     int h = luaL_checkinteger(L, 4);
-    int dx = luaL_checkinteger(L, 5);
-    int dy = luaL_checkinteger(L, 6);
+
 
     auto canvasSize = currentState.canvas->getCanvasSize();
 
-    if (x < 0 || y < 0 || w <= 0 || h <= 0 || dx < 0 || dy < 0)
+    if (x < 0 || y < 0 || w <= 0 || h <= 0 )
         return luaL_error(L, "Coordinates and sizes must be non-negative and non-zero");
-    if (dx < 0 || dy < 0 || dx + w > static_cast<int>(canvasSize.x) || dy + h > static_cast<int>(canvasSize.y))
-        return luaL_error(L, "Destination rectangle exceeds canvas size");
-
-    if (dx < 0 || dy < 0 || dx + w > static_cast<int>(canvasSize.x) || dy + h > static_cast<int>(canvasSize.y))
-        return luaL_error(L, "Destination rectangle exceeds canvas size");
 
 
-    copyRegion(x, y, w, h, dx, dy);
+    copyRegion(x, y, w, h);
     return 0;
+}
+
+int LuaEmbed::canvas_pasteRegion(lua_State *L) {
+
+    int x1 = luaL_checkinteger(L, 1);
+    int y1 = luaL_checkinteger(L, 2);
+
+
+    auto canvasSize = currentState.canvas->getCanvasSize();
+
+    if (x1 < 0 || y1 < 0)
+        return luaL_error(L, "Coordinates and sizes must be non-negative and non-zero");
+    if (x1 < 0 || y1 < 0 || x1 > static_cast<int>(canvasSize.x) || y1  > static_cast<int>(canvasSize.y))
+        return luaL_error(L, "Destination rectangle exceeds canvas size");
+
+    if (x1 < 0 || y1 < 0 || x1  > static_cast<int>(canvasSize.x) || y1  > static_cast<int>(canvasSize.y))
+        return luaL_error(L, "Destination rectangle exceeds canvas size");
+
+    pasteRegion(x1, y1);
+    return 0;
+
+
+}
+
+
+void LuaEmbed::pasteRegion(int x1, int y1) {
+
+    if (!currentState.canvas)
+        return;
+
+    sf::Image &img = currentState.canvas->canvasImage;
+
+    int newLeft = x1;
+    int newTop  = y1;
+
+
+    img.copy(temp, {static_cast<unsigned int>(newLeft), static_cast<unsigned int>(newTop)}, sf::IntRect({0, 0}, sf::Vector2<int>(temp.getSize())), false);
+
+
 }
 
 
 
-
-void LuaEmbed::moveRegion(int topx, int topy, int bx, int by, int dx, int dy) {
+void LuaEmbed::moveRegion(int topx, int topy, int bx, int by, int x1, int y1) {
     // int width = std::abs(topx - bx);
     // int height = std::abs(topy - by);
     //
@@ -230,8 +347,8 @@ void LuaEmbed::moveRegion(int topx, int topy, int bx, int by, int dx, int dy) {
         }
 
     // Paste at new location
-    int newLeft = dx;
-    int newTop  = dy;
+    int newLeft = x1;
+    int newTop  = y1;
 
 
     img.copy(temp, {static_cast<unsigned int>(newLeft), static_cast<unsigned int>(newTop)}, sf::IntRect({0, 0}, {width, height}), false);
@@ -239,18 +356,7 @@ void LuaEmbed::moveRegion(int topx, int topy, int bx, int by, int dx, int dy) {
 }
 
 
-void LuaEmbed::copyRegion(int topx, int topy, int bx, int by, int dx, int dy) {
-    // int width = std::abs(topx - bx);
-    // int height = std::abs(topy - by);
-    //
-    // sf::Image temp({static_cast<unsigned int>(width),static_cast<unsigned int>(height)}, sf::Color::Transparent);
-    //
-    // sf::IntRect rect({topx,topy},{width,height});
-    //
-    // temp.copy()
-    //
-    // currentState.canvas->canvasImage.copy();
-
+void LuaEmbed::copyRegion(int topx, int topy, int bx, int by) {
     if (!currentState.canvas)
         return;
 
@@ -268,22 +374,16 @@ void LuaEmbed::copyRegion(int topx, int topy, int bx, int by, int dx, int dy) {
 
     sf::IntRect rect({left, top}, {width, height});
 
-    sf::Image temp({static_cast<unsigned int>(width), static_cast<unsigned int>(height)}, sf::Color::Transparent);
+    temp.resize({static_cast<unsigned int>(width), static_cast<unsigned int>(height)}, sf::Color::Transparent);
 
     temp.copy(img, {0, 0}, rect, false);
 
 
-
-    // Paste at new location
-    int newLeft = dx;
-    int newTop  = dy;
-
-
-    img.copy(temp, {static_cast<unsigned int>(newLeft), static_cast<unsigned int>(newTop)}, sf::IntRect({0, 0}, {width, height}), false);
-
 }
 
-// void Canvas::moveRegion(const sf::IntRect& region, int dx, int dy) {
+
+
+// void Canvas::moveRegion(const sf::IntRect& region, int x1, int y1) {
 //     sf::Image temp(region.size, sf::Color::Transparent);
 //
 //
@@ -304,8 +404,8 @@ void LuaEmbed::copyRegion(int topx, int topy, int bx, int by, int dx, int dy) {
 //     // Paste temp at new position
 //     for (int x = 0; x < region.width; ++x) {
 //         for (int y = 0; y < region.height; ++y) {
-//             int newX = region.left + x + dx;
-//             int newY = region.top + y + dy;
+//             int newX = region.left + x + x1;
+//             int newY = region.top + y + y1;
 //
 //             if (newX >= 0 && newY >= 0 && newX < getCanvasSize().x && newY < getCanvasSize().y)
 //                 setPixel({newX, newY}, temp.getPixel(x, y));

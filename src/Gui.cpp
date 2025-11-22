@@ -28,7 +28,7 @@ Gui::Gui(sf::RenderWindow& window) : window(window) {
     editor.SetShowWhitespaces(false);
     editor.SetTabSize(4);
     editor.SetReadOnly(false);
-    editor.SetText("-- code starts here");
+    // editor.SetText("-- code starts here");
     // setPixel(x,y,{r,g,b})
     // setPixel(0,0,{r=255,g=0,b=0}) << red at 0,0 place
     // getPixel(x,y) returns a color table/dictionary
@@ -44,7 +44,7 @@ Gui::Gui(sf::RenderWindow& window) : window(window) {
     // draw pixels at 0,0 1,1, 0,1, 1,0 then try
     //     copy(0,0,1,1,3,3)
     //     moveRegion(x,y,x1,y1,dx2,dy2) same as copy instead of copy it moves
-    lua = new LuaEmbed();
+    lua = new LuaEmbed(window);
 
 
 }

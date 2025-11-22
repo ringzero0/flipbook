@@ -15,6 +15,7 @@ enum primaryModes {
 };
 
 typedef struct States {
+
 	sf::View				view;
 	int						currentFrame;
 	primaryModes			pmode;
