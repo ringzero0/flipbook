@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 		while (std::optional event = window.pollEvent())
 		{
 			gui.processEvents(*event);
-			
+
 
 			sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 
 				handleEvent(*event, window);
 			}
-			
+
 			handleUndo(*event, window);
 
 
@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
 
 		//if (animationState.isPlaying) {
 		//	if (animationState.clock.getElapsedTime().asMilliseconds() >=  ((*currentState.nCanvas)[currentState.currentFrame].frameTime)) {
-		//		
+		//
 		//		//canvas->setPixels(frames[currentFrame]);
 		//		currentState.currentFrame = (currentState.currentFrame + 1) % currentState.nCanvas->size();
 		//		//currentState.canvas = &((*currentState.nCanvas)[currentState.currentFrame]);

@@ -10,3 +10,8 @@ project(pikzel
 
 add_subdirectory(dependencies)
 add_subdirectory(src)
+
+if(WIN32)
+    target_sources(pikzel PRIVATE icon/resource.rc)
+endif()
+

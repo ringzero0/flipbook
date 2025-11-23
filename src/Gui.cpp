@@ -20,7 +20,7 @@ Gui::Gui(sf::RenderWindow& window) : window(window) {
         io.FontDefault = font;
         ImGui::SFML::UpdateFontTexture();
     } else {
-        // fallback: leave default font (or log)
+
         std::cerr << "Warning: could not load arial.ttf; using default font\n";
     }
 
@@ -110,7 +110,7 @@ void Gui::startUp() {
                 showStartupWindow = false;
                 errorMsg.clear();
 
-                // Refresh panels
+
                 // animationPanelSetupRefresh();
                 init();
                 resize(window);
@@ -239,7 +239,7 @@ void Gui::codeWindow() {
 
     if (ImGui::Begin("Lua Code Editor", &currentState.codeEditor))
     {
-        // ImGui::Text("LUA");
+
 
         bool editorFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
         currentState.editorFocused = editorFocused;
@@ -263,7 +263,7 @@ void Gui::codeWindow() {
 
 
 
-        // Optional: set window height dynamically
+
         ImVec2 editorSize = ImVec2(-FLT_MIN, -FLT_MIN);
 
         editor.Render("CodeEditor", editorSize);
@@ -338,7 +338,7 @@ void Gui::menuBar() {
 
     if (ImGui::BeginMainMenuBar()) {
 
-        // ----- File Menu -----
+
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New", "Ctrl+N")) {
                 showStartupWindow = true;
@@ -395,7 +395,7 @@ void Gui::menuBar() {
             ImGui::EndMenu();
         }
 
-        // ----- Edit Menu -----
+
         if (ImGui::BeginMenu("Edit")) {
             if (ImGui::MenuItem("Undo", "Ctrl+Z")) { /* implement */ }
             if (ImGui::MenuItem("Redo", "Ctrl+Y")) { /* implement */ }
@@ -422,7 +422,7 @@ void Gui::menuBar() {
             ImGui::EndMenu();
         }
 
-        // ----- View Menu -----
+
         if (ImGui::BeginMenu("View")) {
             if (ImGui::MenuItem("Reset Canvas")) {
                 resize(window);
@@ -434,7 +434,7 @@ void Gui::menuBar() {
             ImGui::EndMenu();
         }
 
-        // ----- Help Menu -----
+
         if (ImGui::BeginMenu("Help")) {
             if (ImGui::MenuItem("About")) { /* implement */ }
             if (ImGui::MenuItem("Documentation")) { /* implement */ }
@@ -754,7 +754,7 @@ void Gui::drawAnimationPanel() {
     ImGui::SetNextWindowSize(ImVec2(window.getSize().x - (leftPanelWidth + palettePanelWidth), panelHeight));
     ImGui::Begin("Animation Panel", nullptr, ImGuiWindowFlags_NoDecoration);
 
-    // --- Play / Onion / Copy / Grid buttons ---
+
     if (ImGui::Button(animationState.isPlaying ? "Pause" : "Play", ImVec2(90, 30)))
         animationState.isPlaying = !animationState.isPlaying;
     ImGui::SameLine();
@@ -784,7 +784,7 @@ void Gui::drawAnimationPanel() {
 
     ImGui::Spacing();
 
-    // --- Frame Duration ---
+
     if (currentState.canvas) {
         int frameDuration = currentState.canvas->frameTime;
         ImGui::PushItemWidth(150);
@@ -795,7 +795,7 @@ void Gui::drawAnimationPanel() {
 
     ImGui::Spacing();
 
-    // --- Frames timeline ---
+
     ImGui::Text("Frames:");
     ImGui::BeginChild("FramesChild", ImVec2(0, 50), false, ImGuiWindowFlags_HorizontalScrollbar);
 
