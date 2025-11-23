@@ -805,14 +805,16 @@ void Gui::drawAnimationPanel() {
 
         if (i > 0) ImGui::SameLine();
 
+
+        auto it = currentState.nCanvas->begin();
+        std::advance(it, i);
+
+
         if (ImGui::Button(buf, ImVec2(40, 40))) {
             currentState.currentFrame = i;
-            // currentState.canvas = &(*currentState.nCanvas)[i];
-            auto it = currentState.nCanvas->begin();
-            std::advance(it, i);
             currentState.canvas = &(*it);
-
         }
+
 
         if (currentState.currentFrame == i) {
             ImGui::GetWindowDrawList()->AddRect(
@@ -820,7 +822,70 @@ void Gui::drawAnimationPanel() {
                 IM_COL32(100, 149, 237, 255), 0.0f, 0, 3.0f
             );
         }
+
+
+        if (ImGui::BeginPopupContextItem()) {
+
+
+            bool disableDelete = (i == 0);
+
+            if (disableDelete) {
+                ImGui::BeginDisabled();
+                ImGui::MenuItem("Delete");
+                ImGui::EndDisabled();
+            } else {
+                if (ImGui::MenuItem("Delete")) {
+
+
+                    if (currentState.currentFrame == i) {
+                        currentState.currentFrame = (i > 0) ? i - 1 : 0;
+                    }
+
+
+                    auto deleteIt = currentState.nCanvas->begin();
+                    std::advance(deleteIt, i);
+                    currentState.nCanvas->erase(deleteIt);
+
+
+                    if (currentState.currentFrame >= currentState.nCanvas->size())
+                        currentState.currentFrame = currentState.nCanvas->size() - 1;
+
+
+                    auto newIt = currentState.nCanvas->begin();
+                    std::advance(newIt, currentState.currentFrame);
+                    currentState.canvas = &(*newIt);
+                }
+            }
+
+            ImGui::EndPopup();
+        }
+
+        ImGui::OpenPopupOnItemClick(nullptr, ImGuiPopupFlags_MouseButtonRight);
     }
+
+
+    // for (size_t i = 0; i < currentState.nCanvas->size(); ++i) {
+    //     char buf[16];
+    //     sprintf(buf, "%zu", i + 1);
+    //
+    //     if (i > 0) ImGui::SameLine();
+    //
+    //     if (ImGui::Button(buf, ImVec2(40, 40))) {
+    //         currentState.currentFrame = i;
+    //         // currentState.canvas = &(*currentState.nCanvas)[i];
+    //         auto it = currentState.nCanvas->begin();
+    //         std::advance(it, i);
+    //         currentState.canvas = &(*it);
+    //
+    //     }
+    //
+    //     if (currentState.currentFrame == i) {
+    //         ImGui::GetWindowDrawList()->AddRect(
+    //             ImGui::GetItemRectMin(), ImGui::GetItemRectMax(),
+    //             IM_COL32(100, 149, 237, 255), 0.0f, 0, 3.0f
+    //         );
+    //     }
+    // }
 
     ImGui::SameLine();
     if (ImGui::Button("+", ImVec2(40, 40))) {
