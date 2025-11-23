@@ -1,5 +1,6 @@
 
 # Flipbook
+[![Build](https://github.com/prvnprk/flipbook/actions/workflows/build.yml/badge.svg)](https://github.com/prvnprk/flipbook/actions/workflows/build.yml)
 ![flipbook](examples/flipbook.png)
 
 Flipbook is a pixel art animation engine that combines standard drawing tools with a Lua scripting environment. You can draw frame-by-frame animations by hand or use code to generate them procedurally.
