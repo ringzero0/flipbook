@@ -25,7 +25,7 @@ Projects are saved in a custom `.pxrt` format, and animations can be exported to
 *   Export to .GIF or .PNG.
 
 
-
+***
 ## Building from Source
 
 To build Flipbook, you need **CMake** and a **C++ Compiler** (such as MSVC on Windows, GCC, or Clang) installed.
