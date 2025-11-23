@@ -1,6 +1,8 @@
 #include "Gui.hpp"
 
 
+
+
 Gui::Gui(sf::RenderWindow& window) : window(window) {
     ImGui::SFML::Init(window);
     ImGuiIO& io = ImGui::GetIO();
@@ -229,50 +231,159 @@ void Gui::init() {
 //
 // }
 
+//
+// void Gui::codeWindow() {
+//     if (!currentState.codeEditor) {
+//         // currentState.editorFocused = false;
+//         return;
+//     }
+//
+//
+//     if (ImGui::Begin("Lua Code Editor", &currentState.codeEditor))
+//     {
+//
+//
+//         bool editorFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+//         currentState.editorFocused = editorFocused;
+//
+//         if (ImGui::Button("Run"))
+//         {
+//
+//             std::string code = editor.GetText();
+//
+//
+//
+//             // Execute Lua code
+//             if (lua->luaDoString(code.c_str()) != LUA_OK)
+//             {
+//                 std::cerr << "Lua error: " << lua->luaToString(-1) << std::endl;
+//                 lua->luaPopStack(1);
+//             }
+//
+//
+//         }
+//
+//
+//
+//
+//         ImVec2 editorSize = ImVec2(-FLT_MIN, -FLT_MIN);
+//
+//         editor.Render("CodeEditor", editorSize);
+//     }
+//
+//
+//
+//     ImGui::End();
+// }
+
+
+char genPromptBuf[2048] = {0};
+std::atomic<bool> isGenerating = false;
+std::string generatedCode = "";
+std::thread genThread;
+
+
 
 void Gui::codeWindow() {
-    if (!currentState.codeEditor) {
-        // currentState.editorFocused = false;
-        return;
-    }
 
+    // Add to Gui class
+
+
+
+    if (!currentState.codeEditor)
+        return;
 
     if (ImGui::Begin("Lua Code Editor", &currentState.codeEditor))
     {
+        currentState.editorFocused =
+            ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
 
-        bool editorFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
-        currentState.editorFocused = editorFocused;
 
-        if (ImGui::Button("Run"))
+        ImGui::Text("Prompt:");
+        ImGui::PushItemWidth(-FLT_MIN);
+
+        ImGui::InputTextMultiline(
+            "##prompt",
+            genPromptBuf,
+            sizeof(genPromptBuf),
+            ImVec2(0, 100),
+            ImGuiInputTextFlags_AllowTabInput
+        );
+
+
+
+
+
+
+
+        if (isGenerating)
+        {
+            static float timer = 0.0f;
+            timer += ImGui::GetIO().DeltaTime * 4.0f; // speed
+
+            int dots = ((int)timer) % 4;  // 0,1,2,3
+
+            std::string loading = "Generating animation";
+            loading.append(dots, '.');
+
+            ImGui::TextColored(ImVec4(1, 0.8f, 0, 1), "%s", loading.c_str());
+        }
+        else
         {
 
-            std::string code = editor.GetText();
-
-
-
-            // Execute Lua code
-            if (lua->luaDoString(code.c_str()) != LUA_OK)
-            {
-                std::cerr << "Lua error: " << lua->luaToString(-1) << std::endl;
-                lua->luaPopStack(1);
-            }
-
-
+            static float timer = 0.0f;
+            timer = 0.0f;
+            ImGui::Text("");
         }
 
 
 
+        if (!isGenerating)
+        {
+            if (ImGui::Button("Generate"))
+            {
+                isGenerating = true;
 
-        ImVec2 editorSize = ImVec2(-FLT_MIN, -FLT_MIN);
+                // Start background thread
+                genThread = std::thread([this]() {
+                    std::string result = prompt(std::string(genPromptBuf));  // takes 3 minutes
+                    generatedCode = result;
+                    isGenerating = false;
+                });
+                genThread.detach();
+            }
+        }
 
+        ImGui::Separator();
+
+
+        if (ImGui::Button("Run"))
+        {
+            std::string code = editor.GetText();
+            if (lua->luaDoString(code.c_str()) != LUA_OK)
+            {
+                std::cerr << "Lua error: "
+                          << lua->luaToString(-1) << std::endl;
+                lua->luaPopStack(1);
+            }
+        }
+
+
+        if (!isGenerating && !generatedCode.empty())
+        {
+            editor.SetText(generatedCode);
+            generatedCode.clear();
+        }
+
+
+        ImVec2 editorSize(-FLT_MIN, -FLT_MIN);
         editor.Render("CodeEditor", editorSize);
     }
 
-
-
     ImGui::End();
 }
+
 
 
 

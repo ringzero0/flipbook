@@ -4,6 +4,9 @@
 
 #include <SFML/Graphics.hpp>
 
+#include <misc/cpp/imgui_stdlib.h>
+
+
 #include "FileUtils.hpp"
 #include "pxrt.hpp"
 #include "Events.hpp"
@@ -12,6 +15,8 @@
 #include "TextEditor.h"
 
 #include "LuaEmbed.h"
+#include "promptReq.h"
+#include <thread>
 
 
 #include "FileUtils.hpp"

@@ -2,7 +2,9 @@ file(GLOB SOURCES "*.cpp")
 
 file(GLOB HEADERS "*.h" "*.hpp" "include/*.h" "include/*.hpp")
 
-set(ALL_FILES ${SOURCES} ${HEADERS})
+set(ALL_FILES ${SOURCES} ${HEADERS}
+        promptReq.cpp
+        promptReq.h)
 
 add_executable(FlipBook ${ALL_FILES})
 target_link_libraries(FlipBook PRIVATE ImGui-SFML::ImGui-SFML nfd)
